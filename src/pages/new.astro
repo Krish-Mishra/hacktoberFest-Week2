@@ -1,0 +1,643 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getClients } from '../lib/db';
+
+const existingClients = getClients();
+---
+
+<Layout title="Plan Bespoke Itinerary — LocalJourney AI">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Page Header -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <a href="/" class="text-xs text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1">
+            &larr; Back to Dashboard
+          </a>
+          <span class="text-xs text-slate-500">•</span>
+          <span class="text-xs text-slate-400">Step 1 of 2: Guest Intake & Concierge Brief</span>
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight">
+          Craft Bespoke Travel Itinerary
+        </h1>
+        <p class="text-sm text-slate-400 mt-1 max-w-2xl">
+          Complete the client specification below. LocalJourney AI will prompt your local open-weight model to construct a bespoke, luxury day-by-day travel plan.
+        </p>
+      </div>
+
+      <!-- Quick Preset Demo Fill -->
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          onclick="fillSampleIntake('amalfi')"
+          class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-700/80 text-slate-300 hover:text-white hover:border-amber-400/50 transition-colors"
+        >
+          Preset: Amalfi Coast
+        </button>
+        <button
+          type="button"
+          onclick="fillSampleIntake('kyoto')"
+          class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-700/80 text-slate-300 hover:text-white hover:border-amber-400/50 transition-colors"
+        >
+          Preset: Kyoto Zen
+        </button>
+        <button
+          type="button"
+          onclick="fillSampleIntake('alps')"
+          class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-700/80 text-slate-300 hover:text-white hover:border-amber-400/50 transition-colors"
+        >
+          Preset: Swiss Alps
+        </button>
+      </div>
+    </div>
+
+    <!-- Dual Layout: Form on Left / Top, Stream Viewer on Right / Bottom -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+      <!-- Form Column (5 cols on large screens) -->
+      <div class="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-xl space-y-6">
+        
+        <form id="intake-form" onsubmit="handleStreamingSubmit(event)" class="space-y-6">
+          
+          <!-- Section 1: Client Profile -->
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-sm font-serif font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                <span>1.</span> Client Profile
+              </h3>
+              <span class="text-[11px] text-slate-400">Strictly Private</span>
+            </div>
+
+            <div>
+              <label for="clientName" class="block text-xs font-medium text-slate-300 mb-1">
+                Guest / Client Name <span class="text-amber-400">*</span>
+              </label>
+              <input
+                type="text"
+                id="clientName"
+                name="clientName"
+                required
+                placeholder="e.g. Countess Alexandra Romanov"
+                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-colors"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="vipTier" class="block text-xs font-medium text-slate-300 mb-1">
+                  VIP Classification
+                </label>
+                <select
+                  id="vipTier"
+                  name="vipTier"
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-200 focus:outline-none focus:border-amber-400"
+                >
+                  <option value="Ultra-VIP Black Card">Ultra-VIP Black Card</option>
+                  <option value="Gold Private Client" selected>Gold Private Client</option>
+                  <option value="Boutique Member">Boutique Member</option>
+                  <option value="First-Time Traveler">First-Time Traveler</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="clientEmail" class="block text-xs font-medium text-slate-300 mb-1">
+                  Contact Email
+                </label>
+                <input
+                  type="email"
+                  id="clientEmail"
+                  name="clientEmail"
+                  placeholder="confidential@client.com"
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Trip Scope & Logistics -->
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-sm font-serif font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                <span>2.</span> Journey Parameters
+              </h3>
+              <span class="text-[11px] text-slate-400">Destination & Dates</span>
+            </div>
+
+            <div>
+              <label for="destination" class="block text-xs font-medium text-slate-300 mb-1">
+                Destination <span class="text-amber-400">*</span>
+              </label>
+              <input
+                type="text"
+                id="destination"
+                name="destination"
+                required
+                placeholder="e.g. Amalfi Coast & Capri, Italy"
+                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 transition-colors"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="startDate" class="block text-xs font-medium text-slate-300 mb-1">
+                  Departure Date
+                </label>
+                <input
+                  type="date"
+                  id="startDate"
+                  name="startDate"
+                  onchange="calcDuration()"
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label for="endDate" class="block text-xs font-medium text-slate-300 mb-1">
+                  Return Date
+                </label>
+                <input
+                  type="date"
+                  id="endDate"
+                  name="endDate"
+                  onchange="calcDuration()"
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label for="durationDays" class="block text-xs font-medium text-slate-300 mb-1">
+                  Duration (Days)
+                </label>
+                <input
+                  type="number"
+                  id="durationDays"
+                  name="durationDays"
+                  min="1"
+                  max="30"
+                  value="5"
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label for="travelersCount" class="block text-xs font-medium text-slate-300 mb-1">
+                  Guests Count
+                </label>
+                <input
+                  type="number"
+                  id="travelersCount"
+                  name="travelersCount"
+                  min="1"
+                  max="16"
+                  value="2"
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label for="budget" class="block text-xs font-medium text-slate-300 mb-1">
+                  Target Budget
+                </label>
+                <input
+                  type="text"
+                  id="budget"
+                  name="budget"
+                  value="$18,000"
+                  placeholder="$15,000"
+                  class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-amber-300 font-medium focus:outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Pacing & Interests -->
+          <div class="space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-sm font-serif font-bold text-amber-300 uppercase tracking-wider flex items-center gap-2">
+                <span>3.</span> Pacing & Bespoke Passions
+              </h3>
+              <span class="text-[11px] text-slate-400">Concierge Curation</span>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-2">
+                Travel Pacing & Rhythm
+              </label>
+              <div class="grid grid-cols-3 gap-2">
+                <label class="cursor-pointer">
+                  <input type="radio" name="pacing" value="Relaxed" class="peer sr-only" />
+                  <div class="p-2.5 text-center rounded-xl border border-slate-700 peer-checked:border-amber-400 peer-checked:bg-amber-500/10 transition-colors">
+                    <span class="block text-xs font-semibold text-slate-200 peer-checked:text-amber-300">Relaxed</span>
+                    <span class="block text-[10px] text-slate-400 mt-0.5">Late mornings</span>
+                  </div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" name="pacing" value="Balanced" checked class="peer sr-only" />
+                  <div class="p-2.5 text-center rounded-xl border border-slate-700 peer-checked:border-amber-400 peer-checked:bg-amber-500/10 transition-colors">
+                    <span class="block text-xs font-semibold text-slate-200 peer-checked:text-amber-300">Balanced</span>
+                    <span class="block text-[10px] text-slate-400 mt-0.5">Harmonious</span>
+                  </div>
+                </label>
+                <label class="cursor-pointer">
+                  <input type="radio" name="pacing" value="High-Energy" class="peer sr-only" />
+                  <div class="p-2.5 text-center rounded-xl border border-slate-700 peer-checked:border-amber-400 peer-checked:bg-amber-500/10 transition-colors">
+                    <span class="block text-xs font-semibold text-slate-200 peer-checked:text-amber-300">Intensive</span>
+                    <span class="block text-[10px] text-slate-400 mt-0.5">Full access</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-2">
+                Specific Client Interests (Select all that apply)
+              </label>
+              <div class="grid grid-cols-2 gap-2 text-xs" id="interests-group">
+                <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                  <input type="checkbox" name="interests" value="Culinary & Michelin Dining" checked class="rounded accent-amber-400 text-amber-500" />
+                  <span>Culinary & Michelin</span>
+                </label>
+                <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                  <input type="checkbox" name="interests" value="Historic Architecture & Palazzos" checked class="rounded accent-amber-400 text-amber-500" />
+                  <span>Historic Palazzos</span>
+                </label>
+                <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                  <input type="checkbox" name="interests" value="Private Yacht & Sea Charters" checked class="rounded accent-amber-400 text-amber-500" />
+                  <span>Private Yacht Charter</span>
+                </label>
+                <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                  <input type="checkbox" name="interests" value="Vineyard Tasting & Grand Crus" checked class="rounded accent-amber-400 text-amber-500" />
+                  <span>Vineyard Grand Crus</span>
+                </label>
+                <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                  <input type="checkbox" name="interests" value="Private Art Galleries & Curators" class="rounded accent-amber-400 text-amber-500" />
+                  <span>Art & Masterpieces</span>
+                </label>
+                <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                  <input type="checkbox" name="interests" value="Holistic Wellness & Thermal Spas" class="rounded accent-amber-400 text-amber-500" />
+                  <span>Wellness & Spas</span>
+                </label>
+                <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                  <input type="checkbox" name="interests" value="Hidden Speakeasies & Jazz" class="rounded accent-amber-400 text-amber-500" />
+                  <span>Hidden Speakeasies</span>
+                </label>
+                <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-950/60 border border-slate-800 hover:border-slate-700 cursor-pointer">
+                  <input type="checkbox" name="interests" value="Wilderness & Scenic Flights" class="rounded accent-amber-400 text-amber-500" />
+                  <span>Scenic Flights & Nature</span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label for="hotelPreference" class="block text-xs font-medium text-slate-300 mb-1">
+                Accommodation Philosophy
+              </label>
+              <input
+                type="text"
+                id="hotelPreference"
+                name="hotelPreference"
+                value="5-Star Boutique Cliffside Sanctuary with Private Terrace"
+                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-400"
+              />
+            </div>
+
+            <div>
+              <label for="constraints" class="block text-xs font-medium text-slate-300 mb-1">
+                Special Dietary, Health & VIP Constraints
+              </label>
+              <textarea
+                id="constraints"
+                name="constraints"
+                rows="2"
+                placeholder="e.g. Strictly pescatarian, anniversary champagne surprise on Night 2, private tarmac transfer."
+                class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-400"
+              >Strictly pescatarian. Celebrating 15th wedding anniversary on Day 2.</textarea>
+            </div>
+          </div>
+
+          <!-- Section 4: Engine Selection -->
+          <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400 font-medium">Local AI Model:</span>
+              <select id="modelSelect" name="model" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-amber-300">
+                <option value="llama3" selected>llama3 (Recommended)</option>
+                <option value="mistral">mistral (7B)</option>
+                <option value="llama3.2">llama3.2 (3B lightweight)</option>
+                <option value="gemma2">gemma2 (9B)</option>
+              </select>
+            </div>
+            <p class="text-[11px] text-slate-400">
+              Inference runs directly via your local Ollama instance on port 11434. No per-token charges.
+            </p>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="space-y-2 pt-2">
+            <button
+              type="submit"
+              id="generate-btn"
+              class="w-full py-4 px-6 rounded-2xl text-base font-semibold text-slate-950 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-xl shadow-amber-500/20 hover:shadow-amber-500/35 transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2.5 group cursor-pointer"
+            >
+              <svg class="w-5 h-5 text-slate-950 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span>Generate Bespoke Itinerary</span>
+            </button>
+
+            <!-- HTMX Standard Post Option (Dual Mode) -->
+            <button
+              type="button"
+              hx-post="/api/generate"
+              hx-include="#intake-form"
+              hx-target="#itinerary-result-display"
+              hx-indicator="#generating-indicator"
+              onclick="showResultsContainer()"
+              class="w-full py-2 px-4 rounded-xl text-xs font-medium text-slate-400 hover:text-slate-200 bg-slate-950/40 hover:bg-slate-950 border border-slate-800 transition-colors flex items-center justify-center gap-1.5"
+            >
+              <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+              Alternative: HTMX Synchronous Post
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Streaming Results Column (7 cols on large screens) -->
+      <div class="lg:col-span-7 space-y-4">
+        
+        <!-- Stream Control & Status Bar -->
+        <div id="stream-status-bar" class="hidden bg-slate-900 border border-amber-500/30 rounded-2xl p-4 flex items-center justify-between gap-4 animate-fadeIn">
+          <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full bg-amber-400 animate-ping"></div>
+            <div>
+              <span class="text-xs font-semibold text-white block" id="stream-status-headline">Ollama Stream Engaged</span>
+              <span class="text-[11px] text-slate-400" id="stream-status-subline">Streaming tokens directly from local open-weight model...</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="stream-timer" class="font-mono text-xs text-amber-400 font-semibold px-2 py-1 rounded bg-slate-950">0.0s</span>
+            <span id="stream-word-count" class="font-mono text-xs text-slate-400 px-2 py-1 rounded bg-slate-950">0 words</span>
+          </div>
+        </div>
+
+        <!-- Indicator during HTMX Post -->
+        <div id="generating-indicator" class="htmx-indicator hidden bg-slate-900/90 border border-amber-500/30 rounded-2xl p-8 text-center space-y-3">
+          <div class="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <h4 class="text-base font-serif font-bold text-white">Local Concierge Engine Processing...</h4>
+          <p class="text-xs text-slate-400">Synthesizing personalized boutique itinerary from local weights.</p>
+        </div>
+
+        <!-- The Target Container for Generated Itinerary -->
+        <div
+          id="itinerary-result-display"
+          class="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 sm:p-8 backdrop-blur-xl min-h-[500px] shadow-2xl relative"
+        >
+          <!-- Empty Placeholder state before generation -->
+          <div id="empty-stream-placeholder" class="py-24 text-center space-y-4">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+            </div>
+            <div class="max-w-md mx-auto">
+              <h3 class="text-xl font-serif font-bold text-white">Your Itinerary Studio</h3>
+              <p class="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                Fill in the guest profile on the left or select a preset, then click <strong>Generate Bespoke Itinerary</strong> to watch your local model compose the trip in real time.
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center justify-center gap-2 pt-2">
+              <span class="text-[11px] px-2.5 py-1 rounded-full bg-slate-950 text-slate-400 border border-slate-800">
+                🔒 Zero Cloud Telemetry
+              </span>
+              <span class="text-[11px] px-2.5 py-1 rounded-full bg-slate-950 text-slate-400 border border-slate-800">
+                ⚡ Real-time Token Streaming
+              </span>
+              <span class="text-[11px] px-2.5 py-1 rounded-full bg-slate-950 text-slate-400 border border-slate-800">
+                💾 Instant SQLite Auto-save
+              </span>
+            </div>
+          </div>
+
+          <!-- Dynamic Live Markdown Stream Target -->
+          <div id="stream-content-wrapper" class="hidden space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-800">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+                  Local Stream Active
+                </span>
+                <span id="live-client-badge" class="text-xs text-slate-300 font-medium">Guest: Private Client</span>
+              </div>
+              <div id="stream-action-buttons" class="hidden items-center gap-2">
+                <a id="view-saved-link" href="#" class="px-3.5 py-1.5 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition-colors">
+                  Present Client View &rarr;
+                </a>
+                <button onclick="window.print()" class="px-3 py-1.5 text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-xl border border-slate-700 transition-colors">
+                  Print
+                </button>
+              </div>
+            </div>
+
+            <!-- Live Formatted Output Container -->
+            <div 
+              id="live-rendered-markdown" 
+              class="prose prose-invert prose-amber max-w-none prose-headings:font-serif prose-headings:text-amber-200 prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:text-slate-300 prose-li:text-slate-300 prose-strong:text-amber-300 leading-relaxed font-sans"
+            >
+            </div>
+            
+            <!-- Live Typing Cursor -->
+            <div id="stream-cursor" class="inline-block w-2.5 h-5 bg-amber-400 animate-pulse align-middle ml-1"></div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Interactive Client-side Script for Streaming & Form Logic -->
+  <script is:inline>
+    let streamTimerInterval = null;
+    let streamStartTime = 0;
+
+    function calcDuration() {
+      const s = document.getElementById('startDate').value;
+      const e = document.getElementById('endDate').value;
+      if (s && e) {
+        const d1 = new Date(s);
+        const d2 = new Date(e);
+        const diffDays = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+        if (diffDays > 0) {
+          document.getElementById('durationDays').value = diffDays;
+        }
+      }
+    }
+
+    function showResultsContainer() {
+      const ph = document.getElementById('empty-stream-placeholder');
+      if (ph) ph.classList.add('hidden');
+    }
+
+    function fillSampleIntake(preset) {
+      if (preset === 'amalfi') {
+        document.getElementById('clientName').value = 'Victoria & Arthur Sterling';
+        document.getElementById('vipTier').value = 'Ultra-VIP Black Card';
+        document.getElementById('destination').value = 'Amalfi Coast & Capri, Italy';
+        document.getElementById('durationDays').value = '5';
+        document.getElementById('travelersCount').value = '2';
+        document.getElementById('budget').value = '$24,000';
+        document.getElementById('hotelPreference').value = 'Monastero Santa Rosa (Conca dei Marini) or Belmond Hotel Caruso';
+        document.getElementById('constraints').value = 'Strictly pescatarian dining. Celebrating 20th wedding anniversary. Requires private Riva Aquarama charter.';
+      } else if (preset === 'kyoto') {
+        document.getElementById('clientName').value = 'Elena Rostova & Julian Vance';
+        document.getElementById('vipTier').value = 'Gold Private Client';
+        document.getElementById('destination').value = 'Kyoto & Tokyo, Japan';
+        document.getElementById('durationDays').value = '6';
+        document.getElementById('travelersCount').value = '2';
+        document.getElementById('budget').value = '$28,000';
+        document.getElementById('hotelPreference').value = 'Sowaka Heritage Machiya Kyoto & Aman Tokyo';
+        document.getElementById('constraints').value = 'Vegetarian friendly kaiseki. Seeks private audience with master swordsmith or ceramicist.';
+      } else if (preset === 'alps') {
+        document.getElementById('clientName').value = 'Marcus Sterling-Cho';
+        document.getElementById('vipTier').value = 'Ultra-VIP Black Card';
+        document.getElementById('destination').value = 'St. Moritz & Zermatt, Switzerland';
+        document.getElementById('durationDays').value = '7';
+        document.getElementById('travelersCount').value = '4';
+        document.getElementById('budget').value = '$45,000';
+        document.getElementById('hotelPreference').value = 'Badrutt\'s Palace Hotel & Private Alpine Chalet';
+        document.getElementById('constraints').value = 'Heli-skiing private guides, private fondue tasting in secluded mountain hut, luggage forwarded ahead.';
+      }
+    }
+
+    async function handleStreamingSubmit(e) {
+      e.preventDefault();
+      
+      const form = document.getElementById('intake-form');
+      const submitBtn = document.getElementById('generate-btn');
+      const placeholder = document.getElementById('empty-stream-placeholder');
+      const statusBar = document.getElementById('stream-status-bar');
+      const wrapper = document.getElementById('stream-content-wrapper');
+      const renderedTarget = document.getElementById('live-rendered-markdown');
+      const cursor = document.getElementById('stream-cursor');
+      const timerDisplay = document.getElementById('stream-timer');
+      const wordCountDisplay = document.getElementById('stream-word-count');
+      const actionButtons = document.getElementById('stream-action-buttons');
+      const viewSavedLink = document.getElementById('view-saved-link');
+      const liveClientBadge = document.getElementById('live-client-badge');
+
+      // Get form data
+      const formData = new FormData(form);
+      const clientName = formData.get('clientName') || 'Private VIP Client';
+      const destination = formData.get('destination') || 'Bespoke Destination';
+
+      // Update UI state
+      submitBtn.disabled = true;
+      submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+      placeholder.classList.add('hidden');
+      statusBar.classList.remove('hidden');
+      wrapper.classList.remove('hidden');
+      actionButtons.classList.add('hidden');
+      actionButtons.classList.remove('flex');
+      cursor.style.display = 'inline-block';
+      renderedTarget.innerHTML = '';
+      liveClientBadge.textContent = 'Guest: ' + clientName + ' • ' + destination;
+
+      // Start timer
+      streamStartTime = Date.now();
+      clearInterval(streamTimerInterval);
+      streamTimerInterval = setInterval(() => {
+        const elapsed = ((Date.now() - streamStartTime) / 1000).toFixed(1);
+        if (timerDisplay) timerDisplay.textContent = elapsed + 's';
+      }, 100);
+
+      // Construct SSE URL parameters
+      const params = new URLSearchParams();
+      for (const [key, val] of formData.entries()) {
+        params.append(key, val);
+      }
+
+      let accumulatedMarkdown = '';
+      let savedItineraryId = null;
+
+      try {
+        const response = await fetch('/api/generate-sse?' + params.toString());
+        if (!response.ok || !response.body) {
+          throw new Error('Failed to connect to local streaming generator');
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n\n');
+          buffer = lines.pop() || '';
+
+          for (const block of lines) {
+            if (!block.trim()) continue;
+            
+            const eventMatch = block.match(/event:\s*(\w+)/);
+            const dataMatch = block.match(/data:\s*(.+)/s);
+
+            const event = eventMatch ? eventMatch[1] : 'message';
+            const rawData = dataMatch ? dataMatch[1] : '';
+
+            if (event === 'chunk') {
+              try {
+                const parsed = JSON.parse(rawData);
+                if (parsed.text) {
+                  accumulatedMarkdown += parsed.text;
+                  // Re-render markdown using local marked
+                  if (window.marked) {
+                    renderedTarget.innerHTML = window.marked.parse(accumulatedMarkdown);
+                  } else {
+                    renderedTarget.textContent = accumulatedMarkdown;
+                  }
+
+                  // Count words
+                  const words = accumulatedMarkdown.trim().split(/\s+/).length;
+                  if (wordCountDisplay) wordCountDisplay.textContent = words + ' words';
+                }
+              } catch (pErr) {}
+            } else if (event === 'complete') {
+              try {
+                const parsed = JSON.parse(rawData);
+                if (parsed.id) {
+                  savedItineraryId = parsed.id;
+                  if (viewSavedLink) {
+                    viewSavedLink.href = '/itinerary/' + parsed.id;
+                  }
+                }
+              } catch (cErr) {}
+            } else if (event === 'done') {
+              break;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Streaming error:', err);
+        renderedTarget.innerHTML += '<div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs mt-4">Stream disconnected. Rendering saved portion.</div>';
+      } finally {
+        clearInterval(streamTimerInterval);
+        cursor.style.display = 'none';
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+
+        const headline = document.getElementById('stream-status-headline');
+        const subline = document.getElementById('stream-status-subline');
+        if (headline) headline.textContent = 'Itinerary Completed & Saved';
+        if (subline) subline.textContent = 'Stored in local SQLite database. 100% private on this laptop.';
+        
+        if (actionButtons) {
+          actionButtons.classList.remove('hidden');
+          actionButtons.classList.add('flex');
+        }
+      }
+    }
+  </script>
+</Layout>

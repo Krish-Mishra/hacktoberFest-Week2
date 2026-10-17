@@ -1,0 +1,211 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getItineraryById } from '../../lib/db';
+import { marked } from 'marked';
+
+const { id } = Astro.params;
+const itineraryId = parseInt(id || '0', 10);
+const itinerary = getItineraryById(itineraryId);
+
+if (!itinerary) {
+  return Astro.redirect('/');
+}
+
+const renderedHtml = await marked.parse(itinerary.content_markdown || '');
+let parsedInterests: string[] = [];
+try {
+  if (itinerary.interests) {
+    parsedInterests = itinerary.interests.startsWith('[') ? JSON.parse(itinerary.interests) : itinerary.interests.split(',');
+  }
+} catch {
+  parsedInterests = [];
+}
+---
+
+<Layout title={`${itinerary.title} — LocalJourney AI Client Presentation`}>
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+    <!-- Top Action Bar (No-print) -->
+    <div class="no-print flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl">
+      <div class="flex items-center gap-2">
+        <a href="/" class="px-3 py-1.5 rounded-xl text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700 transition-colors flex items-center gap-1.5">
+          &larr; Dashboard
+        </a>
+        <span class="text-slate-600">|</span>
+        <span class="text-xs text-slate-400">Record #{itinerary.id}</span>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          ● Saved in Local SQLite
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <!-- Print / PDF Presentation -->
+        <button
+          onclick="window.print()"
+          class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 rounded-xl shadow-md shadow-amber-500/20 transition-all transform hover:-translate-y-0.5"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          Print / Export PDF
+        </button>
+
+        <!-- Copy Markdown Button -->
+        <button
+          onclick="copyItineraryMarkdown()"
+          id="copy-btn"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 hover:text-white rounded-xl border border-slate-700 transition-colors"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+          <span id="copy-btn-text">Copy Markdown</span>
+        </button>
+
+        <!-- Status Tag / Toggle -->
+        <button
+          onclick="toggleItineraryStatus()"
+          id="status-btn"
+          class="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 rounded-xl transition-colors"
+        >
+          Status: <strong id="status-label" class="capitalize">{itinerary.status || 'draft'}</strong>
+        </button>
+
+        <!-- Delete button via HTMX -->
+        <button
+          hx-delete={`/api/itineraries/${itinerary.id}`}
+          hx-confirm="Are you sure you want to permanently delete this itinerary?"
+          onclick="window.location.href='/'"
+          class="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors"
+          title="Delete itinerary"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Presentation Document Container -->
+    <article class="bg-slate-900/90 border border-slate-800 rounded-3xl p-8 sm:p-14 shadow-2xl relative overflow-hidden backdrop-blur-xl">
+      <!-- Decorative ambient corner accents -->
+      <div class="absolute -top-32 -right-32 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Agency Presentation Header -->
+      <div class="border-b border-slate-800 pb-8 mb-8 space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-bold shadow-md shadow-amber-500/20">
+              LJ
+            </div>
+            <div>
+              <span class="text-xs uppercase tracking-widest font-semibold text-amber-400 block">Private Concierge Portfolio</span>
+              <span class="text-xs text-slate-400">LocalJourney AI Bespoke Travel Planning</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              {itinerary.client_vip_tier || 'VIP Client'}
+            </span>
+            <span class="px-3 py-1 rounded-full text-xs font-mono bg-slate-950 text-slate-400 border border-slate-800">
+              Model: {itinerary.model_used || 'llama3'}
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight leading-tight">
+            {itinerary.title}
+          </h1>
+          <div class="flex flex-wrap items-center gap-y-2 gap-x-4 mt-3 text-sm text-slate-300">
+            <span class="flex items-center gap-1.5 text-amber-400 font-medium">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              {itinerary.destination}
+            </span>
+            <span>•</span>
+            <span>Lead Guest: <strong class="text-white">{itinerary.client_name || 'VIP Guest'}</strong></span>
+            <span>•</span>
+            <span>Party Size: <strong class="text-white">{itinerary.travelers_count} Guests</strong></span>
+            <span>•</span>
+            <span>Rhythm: <strong class="text-white">{itinerary.pacing}</strong></span>
+            {itinerary.budget && (
+              <>
+                <span>•</span>
+                <span>Budget: <strong class="text-amber-300">{itinerary.budget}</strong></span>
+              </>
+            )}
+          </div>
+        </div>
+
+        <!-- Curated Highlights Badges -->
+        {parsedInterests.length > 0 && (
+          <div class="flex flex-wrap items-center gap-2 pt-2">
+            <span class="text-xs text-slate-400">Curated Themes:</span>
+            {parsedInterests.map((interest) => (
+              <span class="px-2.5 py-0.5 rounded-lg text-xs font-medium bg-slate-950 border border-slate-800 text-slate-300">
+                {interest}
+              </span>
+            ))}
+          </div>
+        )}
+
+        <!-- Client VIP constraints note -->
+        {itinerary.constraints && (
+          <div class="p-3.5 rounded-xl bg-amber-500/5 border border-amber-500/20 text-xs text-amber-200/90 flex items-start gap-2.5">
+            <span class="text-amber-400 font-bold">VIP Concierge Note:</span>
+            <span>{itinerary.constraints}</span>
+          </div>
+        )}
+      </div>
+
+      <!-- Markdown Rendered Output -->
+      <div class="prose prose-invert prose-amber max-w-none prose-headings:font-serif prose-headings:text-amber-200 prose-h1:text-2xl prose-h2:text-xl prose-h3:text-lg prose-p:text-slate-300 prose-li:text-slate-300 prose-strong:text-amber-300 prose-blockquote:border-l-amber-400 prose-blockquote:bg-slate-950/40 prose-blockquote:py-1 prose-blockquote:rounded-r-lg font-sans leading-relaxed">
+        <Fragment set:html={renderedHtml} />
+      </div>
+
+      <!-- Document Sign-off Footer -->
+      <div class="mt-14 pt-8 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
+        <div>
+          <p class="font-serif font-bold text-white text-sm">Prepared by LocalJourney AI Concierge</p>
+          <p class="mt-0.5">Confidential boutique travel advisory document.</p>
+        </div>
+        <div class="text-right">
+          <p class="font-mono text-slate-400">Record ID: #{itinerary.id}</p>
+          <p class="text-[11px] text-emerald-400">100% On-Device Local SQLite Storage</p>
+        </div>
+      </div>
+    </article>
+
+  </div>
+
+  <script is:inline define:vars={{ rawMarkdown: itinerary.content_markdown, currentId: itinerary.id }}>
+    async function copyItineraryMarkdown() {
+      const btnText = document.getElementById('copy-btn-text');
+      try {
+        await navigator.clipboard.writeText(rawMarkdown);
+        if (btnText) {
+          btnText.textContent = 'Copied to Clipboard!';
+          setTimeout(() => {
+            btnText.textContent = 'Copy Markdown';
+          }, 2000);
+        }
+      } catch (e) {
+        alert('Failed to copy. Please manually copy from source.');
+      }
+    }
+
+    async function toggleItineraryStatus() {
+      const label = document.getElementById('status-label');
+      const current = label ? label.textContent.toLowerCase().trim() : 'draft';
+      const nextStatus = current === 'draft' ? 'finalized' : 'draft';
+
+      try {
+        const res = await fetch(`/api/itineraries/${currentId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: nextStatus }),
+        });
+        if (res.ok) {
+          if (label) label.textContent = nextStatus;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  </script>
+</Layout>

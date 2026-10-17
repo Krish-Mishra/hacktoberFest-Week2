@@ -1,0 +1,170 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getClients, getItineraries } from '../lib/db';
+
+const clients = getClients();
+const itineraries = getItineraries(100);
+
+// Map client itineraries count
+const clientItineraryMap: Record<number, number> = {};
+itineraries.forEach(item => {
+  if (item.client_id) {
+    clientItineraryMap[item.client_id] = (clientItineraryMap[item.client_id] || 0) + 1;
+  }
+});
+---
+
+<Layout title="VIP Client Directory — LocalJourney AI">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1.5">
+          <a href="/" class="text-xs text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1">
+            &larr; Back to Dashboard
+          </a>
+          <span class="text-xs text-slate-500">•</span>
+          <span class="text-xs text-slate-400">Confidential Database</span>
+        </div>
+        <h1 class="text-3xl font-serif font-bold text-white tracking-tight">
+          VIP Clients & Private Travelers
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">
+          Client profiles and private travel dossiers are stored solely on your laptop in SQLite. No cloud synchronizer or third-party CRM exposure.
+        </p>
+      </div>
+
+      <button
+        onclick="document.getElementById('new-client-modal').classList.remove('hidden')"
+        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 transition-colors shadow-md shadow-amber-500/20"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        <span>Add VIP Client</span>
+      </button>
+    </div>
+
+    <!-- Clients Table / Grid -->
+    <div class="bg-slate-900/80 border border-slate-800 rounded-3xl overflow-hidden shadow-xl backdrop-blur-xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-slate-800 bg-slate-950/60 text-slate-400 uppercase tracking-wider font-semibold">
+              <th class="py-4 px-6">Client / Lead Guest</th>
+              <th class="py-4 px-6">VIP Tier</th>
+              <th class="py-4 px-6">Contact Email</th>
+              <th class="py-4 px-6">Phone</th>
+              <th class="py-4 px-6">Itineraries</th>
+              <th class="py-4 px-6 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60">
+            {clients.map((c) => (
+              <tr class="hover:bg-slate-800/30 transition-colors group">
+                <td class="py-4 px-6">
+                  <div class="font-serif font-bold text-white text-sm group-hover:text-amber-300 transition-colors">
+                    {c.name}
+                  </div>
+                  {c.notes && (
+                    <span class="text-[11px] text-slate-400 block mt-0.5">{c.notes}</span>
+                  )}
+                </td>
+                <td class="py-4 px-6">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    {c.vip_tier || 'Gold VIP'}
+                  </span>
+                </td>
+                <td class="py-4 px-6 text-slate-300 font-mono text-[11px]">
+                  {c.email || '—'}
+                </td>
+                <td class="py-4 px-6 text-slate-300">
+                  {c.phone || '—'}
+                </td>
+                <td class="py-4 px-6">
+                  <span class="px-2 py-1 rounded bg-slate-950 border border-slate-800 text-slate-200 font-mono">
+                    {c.id ? (clientItineraryMap[c.id] || 0) : 0} curated
+                  </span>
+                </td>
+                <td class="py-4 px-6 text-right">
+                  <a
+                    href={`/new?clientName=${encodeURIComponent(c.name)}&vipTier=${encodeURIComponent(c.vip_tier || 'Gold VIP')}`}
+                    class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-slate-950 font-semibold bg-amber-400/90 hover:bg-amber-300 transition-colors text-[11px]"
+                  >
+                    <span>Plan Trip &rarr;</span>
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- New Client Modal -->
+    <div id="new-client-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+      <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <h3 class="text-base font-serif font-bold text-white">Add Confidential Client Profile</h3>
+          <button onclick="document.getElementById('new-client-modal').classList.add('hidden')" class="text-slate-400 hover:text-white p-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <form onsubmit="handleCreateClient(event)" class="py-4 space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Full Name *</label>
+            <input type="text" id="newClientName" required placeholder="Lord Alistair Sterling" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">VIP Tier</label>
+            <select id="newClientTier" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-400">
+              <option value="Ultra-VIP Black Card">Ultra-VIP Black Card</option>
+              <option value="Gold Private Client" selected>Gold Private Client</option>
+              <option value="Boutique Member">Boutique Member</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Confidential Email</label>
+            <input type="email" id="newClientEmail" placeholder="client@private.com" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400" />
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Phone / WhatsApp</label>
+            <input type="tel" id="newClientPhone" placeholder="+1 (555) 234-5678" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-400" />
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-800">
+            <button type="button" onclick="document.getElementById('new-client-modal').classList.add('hidden')" class="px-3.5 py-1.5 text-xs text-slate-400 hover:text-white">Cancel</button>
+            <button type="submit" class="px-4 py-2 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-xl">Save Profile</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script is:inline>
+    async function handleCreateClient(e) {
+      e.preventDefault();
+      const name = document.getElementById('newClientName').value;
+      const vip_tier = document.getElementById('newClientTier').value;
+      const email = document.getElementById('newClientEmail').value;
+      const phone = document.getElementById('newClientPhone').value;
+
+      try {
+        const res = await fetch('/api/clients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, vip_tier, email, phone }),
+        });
+        if (res.ok) {
+          window.location.reload();
+        }
+      } catch (err) {
+        alert('Failed to save client');
+      }
+    }
+  </script>
+</Layout>

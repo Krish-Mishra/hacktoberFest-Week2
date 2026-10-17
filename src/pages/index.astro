@@ -1,0 +1,259 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getItineraries, getDashboardStats } from '../lib/db';
+
+const itineraries = getItineraries(50);
+const stats = getDashboardStats();
+---
+
+<Layout title="Dashboard — LocalJourney AI | Boutique Travel Planner">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+
+    <!-- Top Hero Section -->
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/90 to-amber-950/30 border border-slate-800 p-8 sm:p-10 shadow-2xl">
+      <!-- Decorative ambient lighting -->
+      <div class="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+        <div class="max-w-2xl space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-400/10 text-amber-400 border border-amber-400/20">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            Private Local Travel Intelligence
+          </div>
+          <h1 class="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-white tracking-tight leading-tight">
+            Curate World-Class Journeys, <span class="gold-text-gradient">Zero Cloud Exposure.</span>
+          </h1>
+          <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+            Welcome back to your agency workstation. Tailor high-end itineraries for your VIP clientele in seconds using your local Ollama LLM. All confidential traveler records stay secured on your local drive.
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+          <a
+            href="/new"
+            class="inline-flex items-center justify-center gap-3 px-6 py-4 rounded-2xl text-base font-semibold text-slate-950 bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-xl shadow-amber-500/25 hover:shadow-amber-500/40 transition-all duration-300 transform hover:-translate-y-0.5 group"
+          >
+            <div class="w-6 h-6 rounded-lg bg-slate-950/20 flex items-center justify-center text-slate-950 group-hover:rotate-45 transition-transform">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+            </div>
+            <span>Create New Itinerary</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Row -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-800/80">
+        <div class="bg-slate-950/40 rounded-xl p-4 border border-slate-800/60">
+          <span class="text-xs text-slate-400 uppercase tracking-wider block font-medium">Bespoke Plans</span>
+          <span class="text-2xl font-bold font-serif text-white mt-1 block">{stats.totalItineraries}</span>
+          <span class="text-[11px] text-amber-400/90 mt-0.5 block">Stored in SQLite</span>
+        </div>
+        <div class="bg-slate-950/40 rounded-xl p-4 border border-slate-800/60">
+          <span class="text-xs text-slate-400 uppercase tracking-wider block font-medium">VIP Clients</span>
+          <span class="text-2xl font-bold font-serif text-white mt-1 block">{stats.totalClients}</span>
+          <span class="text-[11px] text-slate-400 mt-0.5 block">Profiles secured</span>
+        </div>
+        <div class="bg-slate-950/40 rounded-xl p-4 border border-slate-800/60">
+          <span class="text-xs text-slate-400 uppercase tracking-wider block font-medium">Data Privacy</span>
+          <span class="text-2xl font-bold font-serif text-emerald-400 mt-1 block">100%</span>
+          <span class="text-[11px] text-emerald-400/90 mt-0.5 block">0 Cloud Telemetry</span>
+        </div>
+        <div class="bg-slate-950/40 rounded-xl p-4 border border-slate-800/60">
+          <span class="text-xs text-slate-400 uppercase tracking-wider block font-medium">Cloud API Cost</span>
+          <span class="text-2xl font-bold font-serif text-amber-400 mt-1 block">$0.00</span>
+          <span class="text-[11px] text-slate-400 mt-0.5 block">Zero vendor lock-in</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Itineraries Management Section -->
+    <div class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-serif font-bold text-white tracking-tight flex items-center gap-3">
+            Recent Client Itineraries
+            <span class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 font-normal">
+              {itineraries.length} records
+            </span>
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Review past drafts, export printable client presentations, or regenerate itineraries.</p>
+        </div>
+
+        <!-- Search / Filter input -->
+        <div class="flex items-center gap-3">
+          <div class="relative">
+            <input
+              type="text"
+              id="itinerary-search"
+              placeholder="Search destination, client..."
+              class="w-full sm:w-64 bg-slate-900 border border-slate-700/80 rounded-xl px-3.5 py-2 pl-9 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-400 transition-colors"
+              oninput="filterItineraries(this.value)"
+            />
+            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <a href="/new" class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition-colors">
+            + New
+          </a>
+        </div>
+      </div>
+
+      <!-- Itineraries List / Grid -->
+      {itineraries.length === 0 ? (
+        <div class="text-center py-16 px-4 rounded-3xl border border-dashed border-slate-800 bg-slate-900/30">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-4">
+            <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+          </div>
+          <h3 class="text-lg font-serif font-bold text-white">No itineraries generated yet</h3>
+          <p class="text-slate-400 text-xs max-w-sm mx-auto mt-1 mb-6">
+            Create your first bespoke travel plan with your local Ollama engine. It takes only a few seconds to craft an ultra-luxury day-by-day experience.
+          </p>
+          <a href="/new" class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition-all">
+            Start First Itinerary &rarr;
+          </a>
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="itineraries-grid">
+          {itineraries.map((item) => (
+            <div 
+              class="itinerary-card group bg-slate-900/80 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-2xl p-6 transition-all duration-300 flex flex-col justify-between shadow-lg hover:shadow-amber-500/5 relative overflow-hidden"
+              data-search={`${item.title} ${item.destination} ${item.client_name || ''}`}
+            >
+              <!-- Card Top Decoration -->
+              <div class="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-500/10 to-transparent pointer-events-none rounded-bl-3xl"></div>
+
+              <div>
+                <!-- Header with Client & Tier -->
+                <div class="flex items-center justify-between gap-2 mb-3">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                    {item.client_vip_tier || 'VIP'}
+                  </span>
+                  <span class="text-[11px] font-mono text-slate-400">
+                    {new Date(item.created_at || '').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                </div>
+
+                <!-- Destination & Title -->
+                <h3 class="text-lg font-serif font-bold text-white group-hover:text-amber-300 transition-colors line-clamp-2 mb-1.5">
+                  <a href={`/itinerary/${item.id}`} class="hover:underline">
+                    {item.title}
+                  </a>
+                </h3>
+
+                <div class="flex items-center gap-1.5 text-xs font-medium text-amber-400/90 mb-3">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <span>{item.destination}</span>
+                </div>
+
+                <!-- Guest & Details Grid -->
+                <div class="space-y-1.5 py-3 border-y border-slate-800/80 text-xs text-slate-400">
+                  <div class="flex items-center justify-between">
+                    <span>Lead Guest:</span>
+                    <strong class="text-slate-200">{item.client_name || 'Bespoke Traveler'}</strong>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span>Pacing / Party:</span>
+                    <span class="text-slate-300">{item.pacing} • {item.travelers_count} Guests</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span>Budget Target:</span>
+                    <span class="text-amber-300 font-medium">{item.budget || 'Bespoke'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Bar -->
+              <div class="mt-5 pt-3 flex items-center justify-between gap-2">
+                <a
+                  href={`/itinerary/${item.id}`}
+                  class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors"
+                >
+                  View Itinerary &rarr;
+                </a>
+
+                <div class="flex items-center gap-1">
+                  <!-- Print / Client presentation icon -->
+                  <a
+                    href={`/itinerary/${item.id}`}
+                    title="Present / Print Itinerary"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                  </a>
+
+                  <!-- HTMX Delete button -->
+                  <button
+                    hx-delete={`/api/itineraries/${item.id}`}
+                    hx-target="closest .itinerary-card"
+                    hx-swap="outerHTML swap:0.2s"
+                    hx-confirm="Are you sure you want to delete this itinerary from your local database?"
+                    title="Delete Itinerary"
+                    class="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <!-- Boutique Agency Local Privacy Feature Callout -->
+    <div class="rounded-3xl bg-slate-900/60 border border-slate-800 p-8 sm:p-10">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex-shrink-0 flex items-center justify-center font-bold">
+            🛡️
+          </div>
+          <div>
+            <h4 class="text-sm font-serif font-bold text-white mb-1">Strict Client Confidentiality</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Ultra-VIP schedules, passport names, and dietary details never touch public cloud endpoints like OpenAI or Anthropic. All prompts run on your laptop.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex-shrink-0 flex items-center justify-center font-bold">
+            ⚡
+          </div>
+          <div>
+            <h4 class="text-sm font-serif font-bold text-white mb-1">Zero Recurring API Costs</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Generate hundreds of itineraries for free. Open-weight models like Llama 3 or Mistral deliver concierge-grade results without per-token charges.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex-shrink-0 flex items-center justify-center font-bold">
+            ✈️
+          </div>
+          <div>
+            <h4 class="text-sm font-serif font-bold text-white mb-1">Offline Plane & Hotel Mode</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Plan and draft itineraries at 35,000 feet or in remote destinations with zero WiFi. SQLite and Ollama function entirely offline.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script is:inline>
+    function filterItineraries(query) {
+      const q = query.toLowerCase().trim();
+      const cards = document.querySelectorAll('.itinerary-card');
+      cards.forEach(card => {
+        const search = card.getAttribute('data-search') || '';
+        if (!q || search.toLowerCase().includes(q)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      });
+    }
+  </script>
+</Layout>

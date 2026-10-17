@@ -1,0 +1,310 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "LocalJourney AI — Local-First AI Trip Planner for Boutique Travel Agencies",
+  description = "A private, 100% on-device AI travel concierge. Zero cloud subscriptions, zero client data leaks, powered by local open-weight models.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="dark scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f59e0b'><path d='M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z'/></svg>" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+
+    <!-- Google Fonts: Playfair Display (Serif) & Inter (Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
+
+    <!-- Offline-ready local vendor libraries -->
+    <script is:inline src="/vendor/htmx.min.js"></script>
+    <script is:inline src="/vendor/sse.js"></script>
+    <script is:inline src="/vendor/marked.min.js"></script>
+
+    <style is:global>
+      /* Custom luxury scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #090d16;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #1e293b;
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #d97706;
+      }
+
+      /* Subtle animated glow */
+      .gold-glow {
+        box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.25);
+      }
+      .gold-text-gradient {
+        background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out forwards;
+      }
+
+      @keyframes pulseSlow {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      .animate-pulse-slow {
+        animation: pulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      /* Print optimizations for agencies presenting to clients */
+      @media print {
+        header, footer, .no-print, button, #ollama-status-pill {
+          display: none !important;
+        }
+        body {
+          background: #ffffff !important;
+          color: #0f172a !important;
+        }
+        .prose {
+          color: #1e293b !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-[#070b12] text-slate-100 font-sans min-h-screen flex flex-col selection:bg-amber-500/30 selection:text-amber-200">
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-50 backdrop-blur-xl bg-[#070b12]/85 border-b border-slate-800/80 transition-all">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+          
+          <!-- Logo & Brand Identity -->
+          <div class="flex items-center gap-8">
+            <a href="/" class="group flex items-center gap-3">
+              <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 via-amber-600 to-yellow-600 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:shadow-amber-500/40 transition-all duration-300">
+                <svg class="w-6 h-6 text-slate-950 transform group-hover:rotate-12 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                </svg>
+              </div>
+              <div>
+                <span class="text-xl font-serif font-bold tracking-tight text-white flex items-center gap-2">
+                  LocalJourney <span class="text-xs px-2 py-0.5 rounded font-mono font-medium tracking-normal bg-amber-400/10 text-amber-400 border border-amber-400/30">AI</span>
+                </span>
+                <span class="block text-[10px] text-slate-400 tracking-wider uppercase font-medium">Boutique Agency Concierge</span>
+              </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+              <a href="/" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                Dashboard
+              </a>
+              <a href="/new" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                New Itinerary
+              </a>
+              <a href="/clients" class="px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                VIP Clients
+              </a>
+            </nav>
+          </div>
+
+          <!-- Status Indicators & CTA -->
+          <div class="flex items-center gap-3">
+            <!-- Privacy Status Tag -->
+            <div class="hidden lg:flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" title="100% On-Device Local SQLite and Local LLM Inference. No cloud tracking.">
+              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span>100% Local Privacy</span>
+            </div>
+
+            <!-- Live Ollama Status Indicator Pill -->
+            <button 
+              id="ollama-status-pill"
+              onclick="document.getElementById('ollama-modal').classList.remove('hidden')"
+              class="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-900 border border-slate-700/80 hover:border-slate-600 transition-colors"
+              title="Click to check or configure Ollama connection"
+            >
+              <span id="ollama-status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+              <span id="ollama-status-text" class="text-slate-300">Checking Ollama...</span>
+            </button>
+
+            <!-- Quick Action Button -->
+            <a href="/new" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-950 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 rounded-xl shadow-md shadow-amber-500/20 transition-all transform hover:-translate-y-0.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+              <span>Plan Trip</span>
+            </a>
+          </div>
+
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow">
+      <slot />
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-24 border-t border-slate-800/80 bg-[#060910] text-slate-400 text-sm py-12">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+          <div class="md:col-span-2">
+            <div class="flex items-center gap-2.5 mb-3">
+              <div class="w-7 h-7 rounded-lg bg-amber-500 flex items-center justify-center text-slate-950 font-bold text-sm">LJ</div>
+              <span class="font-serif font-bold text-white text-lg">LocalJourney AI</span>
+            </div>
+            <p class="text-slate-400 text-xs leading-relaxed max-w-md">
+              A private, local-first B2B travel intelligence workstation engineered for boutique travel designers, luxury agencies, and independent concierges. Never leaks client profiles to third-party clouds.
+            </p>
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-slate-200 uppercase tracking-wider mb-3">Local Architecture</h4>
+            <ul class="space-y-1.5 text-xs text-slate-400">
+              <li>• Astro 5 Server-Side Rendering</li>
+              <li>• HTMX High-Speed Declarative Streams</li>
+              <li>• SQLite Local Storage (WAL Mode)</li>
+              <li>• Ollama Local Open-Weight Models</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-xs font-semibold text-slate-200 uppercase tracking-wider mb-3">Boutique Compliance</h4>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Zero cloud API fees, zero per-token billing, 100% GDPR & VIP client confidentiality compliant.
+            </p>
+          </div>
+        </div>
+        <div class="pt-8 border-t border-slate-800/60 flex flex-wrap items-center justify-between gap-4 text-xs text-slate-500">
+          <p>© 2026 LocalJourney AI. Built for the Hacktoberfest Open-Source AI Challenge.</p>
+          <div class="flex items-center gap-4">
+            <span class="text-emerald-400/90 font-mono">● Local Host Active</span>
+            <span>SQLite: data/localjourney.db</span>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Ollama Status & Config Modal -->
+    <div id="ollama-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+      <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">🦙</div>
+            <h3 class="text-lg font-serif font-bold text-white">Local Ollama Engine Status</h3>
+          </div>
+          <button onclick="document.getElementById('ollama-modal').classList.add('hidden')" class="text-slate-400 hover:text-white p-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="py-5 space-y-4">
+          <div id="ollama-modal-info" class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-2 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Endpoint:</span>
+              <span class="font-mono text-xs text-amber-400">http://localhost:11434</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Status:</span>
+              <span id="ollama-modal-status-badge" class="font-medium text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-400">Detecting...</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-400">Available Models:</span>
+              <span id="ollama-modal-models" class="font-mono text-xs text-slate-300">Checking...</span>
+            </div>
+          </div>
+
+          <div class="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3.5 text-xs text-slate-300 leading-relaxed">
+            <strong class="text-amber-400 block mb-1">To run your local model:</strong>
+            Start Ollama in your terminal using any open model:
+            <code class="block mt-1.5 p-2 bg-slate-950 rounded font-mono text-amber-300 select-all">ollama run llama3</code>
+            <span class="block mt-1 text-slate-400">Or <code class="text-amber-300">ollama run mistral</code> or <code class="text-amber-300">ollama run llama3.2</code>. If Ollama is not active, LocalJourney AI automatically uses its high-fidelity local streaming simulator for seamless testing.</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <button onclick="refreshOllamaStatus()" class="px-4 py-2 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Re-check Status
+          </button>
+          <button onclick="document.getElementById('ollama-modal').classList.add('hidden')" class="px-4 py-2 text-xs font-semibold text-slate-950 bg-amber-400 hover:bg-amber-300 rounded-lg transition-colors">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Client-side Health Check Script -->
+    <script is:inline>
+      async function refreshOllamaStatus() {
+        const dot = document.getElementById('ollama-status-dot');
+        const text = document.getElementById('ollama-status-text');
+        const modalBadge = document.getElementById('ollama-modal-status-badge');
+        const modalModels = document.getElementById('ollama-modal-models');
+
+        if (text) text.textContent = 'Checking...';
+
+        try {
+          const res = await fetch('/api/status');
+          const data = await res.json();
+          
+          if (data.ollama && data.ollama.online) {
+            if (dot) {
+              dot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+            }
+            if (text) {
+              text.textContent = 'Ollama: ' + (data.ollama.models[0] || 'Online');
+              text.className = 'text-emerald-400 font-medium';
+            }
+            if (modalBadge) {
+              modalBadge.className = 'font-medium text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400';
+              modalBadge.textContent = 'Connected (Port 11434)';
+            }
+            if (modalModels) {
+              modalModels.textContent = data.ollama.models.join(', ') || 'llama3';
+            }
+          } else {
+            if (dot) {
+              dot.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+            }
+            if (text) {
+              text.textContent = 'Ollama: Offline (Demo Mode)';
+              text.className = 'text-amber-400';
+            }
+            if (modalBadge) {
+              modalBadge.className = 'font-medium text-xs px-2 py-0.5 rounded bg-amber-500/10 text-amber-400';
+              modalBadge.textContent = 'Offline (Fallback Mode Active)';
+            }
+            if (modalModels) {
+              modalModels.textContent = 'None detected (Run `ollama run llama3`)';
+            }
+          }
+        } catch (e) {
+          if (text) text.textContent = 'Ollama: Local Simulator Active';
+        }
+      }
+
+      // Check status on load
+      document.addEventListener('DOMContentLoaded', () => {
+        refreshOllamaStatus();
+      });
+    </script>
+  </body>
+</html>
